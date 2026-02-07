@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="fr">
+    <head>
+        <meta charset="UFT-8">
+        <title>{% block title %} Projet Génie Logiciel {% endblock %}</title>
+        <link rel="stlesheet" href="{{ url_for('static', filename='CSS/style.css') }}">
+    </head>
+
+    <body>
+        <header>
+            <nav class="navbar">
+                <a href="/">Accueil</a>
+                <a href="/carte">Carte</a>
+                <a href="/gare">Gares</a>
+                <a href="/chiffre">Chiffres</a>
+            </nav>
+        </header>
+
+        <main>
+            {% block content %}
+            {% endblock %}
+        </main>
+
+        <footer>
+            <p>&copy; 2026 Projet Génie Logiciel.</p>
+        </footer>
+
+    </body>
+</html>
