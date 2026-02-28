@@ -3,26 +3,35 @@
     <head>
         <meta charset="UFT-8">
         <title>{% block title %} Projet Génie Logiciel {% endblock %}</title>
-        <link rel="stlesheet" href="{{ url_for('static', filename='CSS/style.css') }}">
+        <link rel="stylesheet" href="{{ url_for('static', filename='CSS/style.css') }}">
     </head>
 
     <body>
-        <header>
-            <nav class="navbar">
-                <a href="/">Accueil</a>
-                <a href="/carte">Carte</a>
-                <a href="/gare">Gares</a>
-                <a href="/chiffre">Chiffres</a>
-            </nav>
+        <header class="header">
+            <div class="container header-content">
+                <div class="logo">
+                    Projet SNCF
+                </div>
+                <nav class="nav">
+                    <a href="/" class="nav-link">Accueil</a>
+                    <a href="/carte" class="nav-link">Carte</a>
+                    <a href="/gare" class="nav-link">Gares</a>
+                    <a href="/chiffre" class="nav-link">Chiffres</a>
+                </nav>
+            </div>
         </header>
 
-        <main>
-            {% block content %}
-            {% endblock %}
+        <main class="main-content">
+            <div class="container">
+                {% block content %}
+                {% endblock %}
+            </div>
         </main>
 
-        <footer>
-            <p>&copy; 2026 Projet Génie Logiciel.</p>
+        <footer class="footer">
+            <div class="container footer-content">
+                <p>&copy; 2026 Cours Génie Logiciel</p>
+            </div>
         </footer>
 
     </body>
