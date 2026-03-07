@@ -4,4 +4,31 @@
 
 {% block content %}
 
+<section class="section">
+    <h1>Carte de la France</h1>
+    <p>
+        Carte la france avec possibilité de zoomer sur les différents départments et régions. 
+    </p>
+</section>
+<div class="map-layout">
+    <div class="map-sidebar">
+        <h3>Affichage :</h3>
+        <label>
+            <input type="radio" name="donnees" value="Region" checked>
+            Régions
+        </label>
+        <label>
+            <input type="radio" name="donnees" value="departement" checked>
+            Départements
+        </label>
+    </div>
+    
+    <section class="map-section">
+        <div id="map"></div>
+    </section>
+
+</div>
+
+<script src="{{ url_for('static', filename='JS/map2.js')}}"></script>
+
 {% endblock %}
