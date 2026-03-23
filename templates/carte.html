@@ -12,19 +12,31 @@
 </section>
 <div class="map-layout">
     <div class="map-sidebar">
-        <h3>Affichage :</h3>
-        <label>
-            <input type="radio" name="donnees" value="Region" checked>
-            Régions
-        </label>
-        <label>
-            <input type="radio" name="donnees" value="departement" checked>
-            Départements
-        </label>
+        <div class="feature-input">
+            <h3>Affichage :</h3>
+            <label>
+                <input type="radio" name="donnees" value="propre" checked>
+                Propeté
+            </label>
+            <br>
+            <label>
+                <input type="radio" name="donnees" value="frequentation" checked>
+                Fréquentation
+            </label>
+        </div>
+        <br>
+        <hr>
+        <br>
+        <div class="infoDep">
+            <h3> Info département : </h3>
+            <div id="info-Departement">
+                Déparptement sélectioné : none
+            </div>
+        </div>
     </div>
-    
+
     <section class="map-section">
-        <div id="map"></div>
+        <svg id="map" width="800" height="900"></svg>
     </section>
 
 </div>
