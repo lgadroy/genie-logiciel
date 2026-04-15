@@ -1,0 +1,15 @@
+{% extends "header&footer.html" %}
+
+{% block title %}Accueil{% endblock %}
+
+{% block content %}
+
+<h1>Test BDD : Liste des gares</h1>
+<ul>
+    <!-- Affichage des 10 premières gares de la base de données -->
+    {% for gare in gares[:10] %}
+    <li>{{ gare[0] }} - {{ gare[1] }}</li>
+    {% endfor %}
+</ul>
+
+{% endblock %}
