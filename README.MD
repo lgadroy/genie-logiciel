@@ -37,9 +37,9 @@ genie-logiciel/
 | --------------------------- | ------------------------------------------------- |
 | Louis GUERY                 | louis.guery9@etu.univ-lorraine.fr                 |
 | Leo GADROY                  | leo.gadroy9@etu.univ-lorraine.fr                  |
-| Mariam                      |  |
-| Dounia                      |  |
-| Mélissandre                 |  |
-| Maha                        |  |
+| Mariam ZAIM MOUNAJED        | mariam.zaim-mounajed3@etu.univ-lorraine.fr        |
+| Dounia KHALFOUNI            | dounia.khalfouni4@etu.univ-lorraine.fr            |
+| Mélissandre LOS             | melissandre.los9@etu.univ-lorraine.fr             |
+| Maha EL OUATRI              | maha.el-ouatri1@etu.univ-lorraine.fr              |
 
 _Projet développé dans le cadre du module Génie Logiciel._
