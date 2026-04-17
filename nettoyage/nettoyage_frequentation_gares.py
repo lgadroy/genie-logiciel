@@ -1,6 +1,6 @@
 import pandas as pd
 
-# Charger le fichier CSV chemin absolu
+# Charger le fichier CSV
 input_path = "nettoyage/frequentation-gares.csv"
 df = pd.read_csv(input_path, sep=';', dtype=str)
 
