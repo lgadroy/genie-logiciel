@@ -6,7 +6,7 @@ FREQ_PATH = 'nettoyage/frequentation-gares-clean.csv'
 PROP_22 = 'nettoyage/proprete-en-gare-22-clean.csv'
 PROP_23 = 'nettoyage/proprete-en-gare-23-clean.csv'
 PROP_24 = 'nettoyage/proprete-en-gare-24-clean.csv'
-DB_PATH = 'local-bdd/gares.db'
+DB_PATH = 'bdd/gares.db'
 
 # Création de la base et des 2 tables
 conn = sqlite3.connect(DB_PATH)
