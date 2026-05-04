@@ -20,6 +20,11 @@ colonnes_voyageurs_a_supprimer = [
     )
 ]
 
+# Ajouter un zéro devant les codes postaux à 4 chiffres
+def ajouter_zero_code_postal(code):
+    return code if pd.isna(code) else str(code).zfill(5)
+df['Code postal'] = df['Code postal'].apply(ajouter_zero_code_postal)
+
 # Supprimer les colonnes
 colonnes_finales = [col for col in df.columns if col not in colonnes_a_supprimer + colonnes_voyageurs_a_supprimer]
 df_clean = df[colonnes_finales]
