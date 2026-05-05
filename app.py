@@ -1,4 +1,4 @@
-from flask import Flask, render_template, jsonify
+from flask import Flask, render_template, jsonify, request
 import sqlite3
 
 app = Flask(__name__)
@@ -95,17 +95,18 @@ def chiffre():
 
 @app.route('/api/gares')
 def get_gares():
+    annee = request.args.get('annee', '2022')  
     conn = sqlite3.connect('bdd/gares.db')
     c = conn.cursor()
-
-    c.execute("""
+    query = f"""
         SELECT g.ID_gare, g.Nom_gare, g.Code_postal,
-               g.Nb_voyageurs_2023,
-               cp.Taux_nonconformites_2023
+               g.Nb_voyageurs_{annee},
+               cp.Taux_nonconformites_{annee}
         FROM Gare g
         LEFT JOIN ControleProprete cp
         ON g.ID_gare = cp.ID_gare
-    """)
+    """
+    c.execute(query)
 
     rows = c.fetchall()
     conn.close()
