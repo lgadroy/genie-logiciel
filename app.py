@@ -5,7 +5,81 @@ app = Flask(__name__)
 
 @app.route('/')
 def home():
-    return render_template('home.html')
+    conn = sqlite3.connect('bdd/gares.db')
+    c = conn.cursor()
+
+    # Nombre total de gares dans la base
+    c.execute("SELECT COUNT(*) FROM Gare")
+    # fetchone() retourne une tuple, on prend le premier élément
+    home_nombre_gares = c.fetchone()[0]
+
+    # Nombre de départements différents représentés dans la base
+    c.execute("SELECT COUNT(DISTINCT SUBSTR(Code_postal, 1, 2)) FROM Gare")
+    home_nombre_departements = c.fetchone()[0]
+
+    # Moyenne de propreté sur 2024, transformée en pourcentage lisible
+    c.execute("""
+        SELECT AVG(100 - Taux_nonconformites_2024)
+        FROM ControleProprete
+        WHERE Taux_nonconformites_2024 IS NOT NULL
+    """)
+    home_moyenne_proprete = c.fetchone()[0]
+    home_moyenne_proprete = f"{home_moyenne_proprete:.2f}%"
+
+    # Total des voyageurs en 2024
+    c.execute("SELECT SUM(Nb_voyageurs_2024) FROM Gare WHERE Nb_voyageurs_2024 IS NOT NULL")
+    home_total_voyageurs = c.fetchone()[0]
+    # On formate le nombre total de voyageurs avec des espaces pour les milliers
+    home_total_voyageurs = f"{int(home_total_voyageurs):,}".replace(',', ' ')
+
+    # Gare la plus propre : on récupère son nom, son score et son département
+    c.execute("""
+        SELECT
+            g.Nom_gare AS nom_gare,
+            100 - cp.Taux_nonconformites_2024 AS score_proprete,
+            SUBSTR(g.Code_postal, 1, 2) AS code_departement
+        FROM Gare g
+        JOIN ControleProprete cp ON g.ID_gare = cp.ID_gare
+        WHERE cp.Taux_nonconformites_2024 IS NOT NULL
+        ORDER BY score_proprete DESC
+        LIMIT 1
+    """)
+    plus_propre = c.fetchone()
+    home_gare_plus_propre = plus_propre[0]
+    home_score_plus_propre = f"{plus_propre[1]:.1f}%"
+    home_departement_plus_propre = plus_propre[2]
+
+    # Gare la plus fréquentée : on récupère aussi son score de propreté
+    c.execute("""
+        SELECT Nom_gare, Nb_voyageurs_2024,
+               (SELECT 100 - Taux_nonconformites_2024
+                FROM ControleProprete cp
+                WHERE cp.ID_gare = g.ID_gare)
+        FROM Gare g
+        WHERE Nb_voyageurs_2024 IS NOT NULL
+        ORDER BY Nb_voyageurs_2024 DESC
+        LIMIT 1
+    """)
+    frequentee = c.fetchone()
+    home_gare_plus_frequentee = frequentee[0]
+    home_nombre_voyageurs_plus_frequentee = f"{int(frequentee[1]):,}".replace(',', ' ')
+    home_proprete_gare_plus_frequentee = f"{frequentee[2]:.2f}%"
+
+    conn.close()
+
+    return render_template(
+        'home.html',
+        home_nombre_gares=home_nombre_gares,
+        home_nombre_departements=home_nombre_departements,
+        home_moyenne_proprete=home_moyenne_proprete,
+        home_total_voyageurs=home_total_voyageurs,
+        home_gare_plus_propre=home_gare_plus_propre,
+        home_score_plus_propre=home_score_plus_propre,
+        home_departement_plus_propre=home_departement_plus_propre,
+        home_gare_plus_frequentee=home_gare_plus_frequentee,
+        home_nombre_voyageurs_plus_frequentee=home_nombre_voyageurs_plus_frequentee,
+        home_proprete_gare_plus_frequentee=home_proprete_gare_plus_frequentee,
+    )
 
 @app.route('/carte')
 def carte():

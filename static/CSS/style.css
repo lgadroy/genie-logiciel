@@ -212,3 +212,227 @@ h3{
     text-align: center;
     font-size: 0.9rem;
 }
+
+/* 
+-----------------------------------------------------------
+                    SECTION HOME TITLE
+-----------------------------------------------------------
+*/
+
+.home-title-section {
+    text-align: center;
+    margin-bottom: 60px;
+    padding: 40px 0;
+}
+
+.home-title-title {
+    font-size: 3rem;
+    color: var(--primary-color);
+    margin-bottom: 15px;
+    font-weight: 700;
+}
+
+.home-title-subtitle {
+    font-size: 1.2rem;
+    color: #666;
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+/* 
+-----------------------------------------------------------
+                    SECTION CARDS
+-----------------------------------------------------------
+*/
+
+.cards-section {
+    margin-bottom: 80px;
+}
+
+.cards-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 30px;
+}
+
+.card {
+    background: white;
+    border-radius: 12px;
+    padding: 30px;
+    text-align: center;
+}
+
+.card-icon {
+    width: 80px;
+    height: 80px;
+    margin: 0 auto 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    font-size: 2.5rem;
+}
+
+.icon-map {
+    background-color: #E8D5F2;
+    color: var(--primary-color);
+}
+
+.icon-gare {
+    background-color: #D4F1D4;
+    color: #2ecc71;
+}
+
+.icon-chart {
+    background-color: #D4E9F7;
+    color: #3498db;
+}
+
+.card-title {
+    font-size: 1.4rem;
+    color: var(--text-color);
+    margin-bottom: 10px;
+    font-weight: 600;
+}
+
+.card-description {
+    color: #666;
+    font-size: 0.95rem;
+    margin-bottom: 20px;
+    line-height: 1.5;
+}
+
+/* 
+-----------------------------------------------------------
+                    BOUTONS
+-----------------------------------------------------------
+*/
+
+.btn {
+    display: inline-block;
+    padding: 12px 30px;
+    border-radius: 25px;
+    text-decoration: none;
+    font-weight: 600;
+    border: none;
+    cursor: pointer;
+    font-size: 0.95rem;
+}
+
+.btn-primary,
+.btn-success,
+.btn-info {
+    color: white;
+}
+
+.btn-primary {
+    background-color: var(--primary-color);
+}
+
+.btn-success {
+    background-color: #2ecc71;
+}
+
+.btn-info {
+    background-color: #3498db;
+}
+
+/* 
+-----------------------------------------------------------
+                    SECTION OVERVIEW
+-----------------------------------------------------------
+*/
+
+.overview-section {
+    background: linear-gradient(135deg, var(--primary-color) 0%, #9d3a8f 100%);
+    color: white;
+    padding: 50px 30px;
+    border-radius: 12px;
+    margin-bottom: 80px;
+    text-align: center;
+}
+
+.overview-title {
+    font-size: 2.2rem;
+    margin-bottom: 40px;
+    color: white;
+}
+
+.stats-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 30px;
+}
+
+.stat-box {
+    background: rgba(255, 255, 255, 0.1);
+    padding: 30px;
+    border-radius: 8px;
+}
+
+.stat-number {
+    font-size: 2.5rem;
+    font-weight: 700;
+    margin-bottom: 10px;
+    color: #fff;
+}
+
+.stat-label {
+    font-size: 0.95rem;
+    color: rgba(255, 255, 255, 0.9);
+}
+
+/* 
+-----------------------------------------------------------
+                    SECTION TOP-GARES
+-----------------------------------------------------------
+*/
+
+.top-gares-section {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 30px;
+    margin-bottom: 40px;
+}
+
+.top-gares-box {
+    padding: 30px;
+    border-radius: 12px;
+    border-left: 5px solid var(--highlight-accent, transparent);
+    background-color: var(--highlight-bg, transparent);
+}
+
+.top-gare-frequentee {
+    --highlight-bg: #E8F5E9;
+    --highlight-accent: #2ecc71;
+}
+
+.top-gare-plus-propre {
+    --highlight-bg: #E3F2FD;
+    --highlight-accent: #3498db;
+}
+
+.top-gares-icon {
+    font-size: 2rem;
+    margin-bottom: 15px;
+}
+
+.top-gares-title {
+    font-size: 1.1rem;
+    color: #666;
+    font-weight: 500;
+    margin-bottom: 10px;
+}
+
+.top-gares-gare-name {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--primary-color);
+    margin-bottom: 10px;
+}
+
+.top-gares-detail {
+    font-size: 0.9rem;
+    color: #555;
+    margin: 5px 0;
+}
