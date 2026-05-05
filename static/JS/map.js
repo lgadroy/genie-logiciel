@@ -47,11 +47,15 @@ d3.json("/static/data/departements.geojson").then(function(data){
             let moyenneNonconf = countNonconf > 0 ? (totalNonconf / countNonconf).toFixed(2) : "N/A";
             
             document.getElementById("info-Departement").innerHTML =
-                "Département: " + d.properties.nom +
-                "<br>Nombre de gares: " + garesDep.length +
+                "Département: " + d.properties.nom + " (" + codeDep + ")" +
+                "<br>Nombre de gares avec données de propreté : " + countNonconf + "/" + garesDep.length +
                 "<br>Fréquentation totale : " + totalVoyageurs.toLocaleString() +
-                "<br>Moyenne de non-conformités: " + moyenneNonconf + "%";
+                "<br>Taux de conformité : " + (100 - parseFloat(moyenneNonconf)) + "%";
         });
+
+    setTimeout(() => {
+        updateColorMap();
+    }, 100);
 
 });
 
@@ -71,11 +75,13 @@ function updateColorMap(){
 
     d3.selectAll("path")
     .attr("fill", function(d){
-
-        let codeDep = d.properties.code; // dépend de ton geojson
+        // Récupérer le code du département pour accéder aux données correspondantes
+        let codeDep = d.properties.code;
 
         if(selectedData === "frequentation"){
             let value = depData[codeDep] || 0;
+            // Si pas de données de fréquentation, colorier en gris
+            if(value === 0) return "#bdc3c7";
             if(value > 10000000) return "#922b21";
             if(value > 5000000) return "#e74c3c";
             if(value > 1000000) return "#f1948a";
@@ -83,7 +89,9 @@ function updateColorMap(){
         }
 
         if(selectedData === "propre"){
-            let value = propData[codeDep] || 0;
+            let value = propData[codeDep];
+            // Si pas de données de propreté, colorier en gris
+            if(value === undefined) return "#bdc3c7";
             if(value < 1) return "#145a32";
             if(value < 3) return "#27ae60";
             if(value < 5) return "#82e0aa";
