@@ -1,7 +1,283 @@
 {% extends "header&footer.html" %}
 
-{% block title %}Chiffre{% endblock %}
+{% block title %}Chiffres{% endblock %}
 
 {% block content %}
+
+<style>
+
+</style>
+
+<div class="container-dashboard">
+
+<h1>Données des gares</h1>
+<p class="subtitle">Découvrez toutes les gares SNCF et leurs indicateurs de propreté</p>
+
+<div class="section">
+    <h2>📈 Évolution globale</h2>
+
+    <div class="row-flex">
+
+        <div class="mini-card">
+            <h3>Voyageurs totaux</h3>
+            <p>2022 : <b>{{ "{:,}".format(total_voy_22).replace(",", " ") }}</b></p>
+            <p>2023 : <b>{{ "{:,}".format(total_voy_23).replace(",", " ") }}</b></p>
+            <p>2024 : <b>{{ "{:,}".format(total_voy_24).replace(",", " ") }}</b></p>
+        </div>
+
+        <div class="mini-card">
+            <h3>Propreté moyenne</h3>
+            <p>2022 : <b>{{ "%.2f"|format(moy_prop_22) }}%</b></p>
+            <p>2023 : <b>{{ "%.2f"|format(moy_prop_23) }}%</b></p>
+            <p>2024 : <b>{{ "%.2f"|format(moy_prop_24) }}%</b></p>
+        </div>
+
+    </div>
+</div>
+
+<div class="filters-box">
+    <div class="filter">
+        <label>Recherche</label>
+        <input type="text" id="inputRecherche">
+    </div>
+
+    <div class="filter">
+        <label>Département</label>
+        <select id="selectDepartement">
+            <option value="all">Tous</option>
+            {% for departement in liste_departements %}
+                <option value="{{ departement }}">{{ departement }}</option>
+            {% endfor %}
+        </select>
+    </div>
+
+    <div class="filter">
+        <label>Année</label>
+        <select id="selectAnnee">
+            <option value="2022" {% if annee == "2022" %}selected{% endif %}>2022</option>
+            <option value="2023" {% if annee == "2023" %}selected{% endif %}>2023</option>
+            <option value="2024" {% if annee == "2024" %}selected{% endif %}>2024</option>
+        </select>
+    </div>
+
+    <div class="filter">
+        <label>Propreté ≥ <span id="valeurProprete">0</span>%</label>
+        <input type="range" id="sliderProprete" min="0" max="100" value="0">
+    </div>
+
+    <div class="filter">
+        <label>Fréquentation max <span id="valeurFrequentation"></span></label>
+        <input type="range" id="sliderFrequentation" min="0" value="0" step="10000">
+    </div>
+</div>
+
+<div class="section">
+<h2>Liste des gares</h2>
+
+<table id="gareTable">
+<thead>
+<tr>
+    <th onclick="sortTable(0)">Nom <span class="static-arrows">↑↓</span></th>
+    <th onclick="sortTable(1)">Département <span class="static-arrows">↑↓</span></th>
+    <th onclick="sortTable(2)">Propreté <span class="static-arrows">↑↓</span></th>
+    <th onclick="sortTable(3)">Fréquentation <span class="static-arrows">↑↓</span></th>
+</tr>
+</thead>
+
+    <tbody>
+    {% for gare in gares %}
+        {% set nom = gare[0] %}
+        {% set freq = gare[1] %}
+        {% set proprete = gare[2] %}
+        {% set departement = gare[3] %}
+
+        <tr class="gareRow"
+            data-nom="{{ nom|lower }}"
+            data-dept="{{ departement|lower }}"
+            data-proprete="{{ proprete if proprete is not none else -1 }}"
+            data-freq="{{ freq }}">
+
+            <td><b>{{ nom }}</b></td>
+            <td>{{ departement }}</td>
+
+            <td>
+                {% if proprete is none %}
+                    <span class="badge badge-red">N/A</span>
+                {% elif proprete >= 90 %}
+                    <span class="badge badge-green">{{ "%.1f"|format(proprete) }}%</span>
+                {% elif proprete >= 75 %}
+                    <span class="badge badge-orange">{{ "%.1f"|format(proprete) }}%</span>
+                {% else %}
+                    <span class="badge badge-red">{{ "%.1f"|format(proprete) }}%</span>
+                {% endif %}
+            </td>
+
+            <td>
+                <div class="progress-bar">
+                    <div class="progress-fill"></div>
+                </div>
+                {{ "{:,}".format(freq).replace(",", " ") }}
+            </td>
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>
+</div>
+
+</div>
+
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+
+
+    const table = document.getElementById("gareTable");
+    const tbody = table.querySelector("tbody");
+
+    const inputRecherche = document.getElementById("inputRecherche");
+    const selectDepartement = document.getElementById("selectDepartement");
+    const sliderProprete = document.getElementById("sliderProprete");
+    const sliderFrequentation = document.getElementById("sliderFrequentation");
+    const selectAnnee = document.getElementById("selectAnnee");
+
+    const valeurProprete = document.getElementById("valeurProprete");
+    const valeurFrequentation = document.getElementById("freqVvaleurFrequentationalue");
+
+    let rows = Array.from(document.querySelectorAll(".gareRow"));
+
+    
+    let maxFreq = 0;
+    rows.forEach(row => {
+        const freq = parseInt(row.dataset.freq) || 0;
+        if (freq > maxFreq) maxFreq = freq;
+    });
+
+    sliderFrequentation.max = maxFreq;
+    sliderFrequentation.value = maxFreq;
+    valeurFrequentation.textContent = maxFreq.toLocaleString("fr-FR");
+
+    //barre de progression
+    function updateProgressBars() {
+        rows.forEach(row => {
+            const freq = parseInt(row.dataset.freq) || 0;
+            const bar = row.querySelector(".progress-fill");
+            if (bar) {
+                bar.style.width = maxFreq > 0 ? (freq / maxFreq * 100) + "%" : "0%";
+            }
+        });
+    }
+
+    updateProgressBars();
+
+   //filtres et recherche
+    function filterTable() {
+        const search = inputRecherche.value.toLowerCase().trim();
+        const dept = selectDepartement.value.toLowerCase();
+        const minProp = parseFloat(sliderProprete.value);
+        const maxF = parseInt(sliderFrequentation.value);
+
+        valeurProprete.textContent = minProp;
+        valeurFrequentation.textContent = maxF.toLocaleString("fr-FR");
+
+        rows.forEach(row => {
+            const nom = row.dataset.nom || "";
+            const dpt = row.dataset.dept || "";
+            const prop = parseFloat(row.dataset.proprete);
+            const freq = parseInt(row.dataset.freq) || 0;
+
+            let show = true;
+
+            if (search && !nom.includes(search) && !dpt.includes(search)) {
+                show = false;
+            }
+
+            if (dept !== "all" && dpt !== dept) {
+                show = false;
+            }
+
+            if (prop !== -1 && prop < minProp) {
+                show = false;
+            }
+
+            if (freq > maxF) {
+                show = false;
+            }
+
+            row.style.display = show ? "" : "none";
+        });
+    }
+
+    // tri des colonnes du tableau
+    let sortDirection = {};
+
+    window.sortTable = function(colIndex) {
+        sortDirection[colIndex] = !sortDirection[colIndex];
+        const asc = sortDirection[colIndex];
+
+        rows.sort((a, b) => {
+            let A = a.children[colIndex].innerText.trim();
+            let B = b.children[colIndex].innerText.trim();
+
+            if (colIndex === 2) {
+                A = A.includes("N/A") ? -1 : parseFloat(A.replace("%", ""));
+                B = B.includes("N/A") ? -1 : parseFloat(B.replace("%", ""));
+                return asc ? A - B : B - A;
+            }
+
+            if (colIndex === 3) {
+                A = parseInt(A.replace(/\s/g, "")) || 0;
+                B = parseInt(B.replace(/\s/g, "")) || 0;
+                return asc ? A - B : B - A;
+            }
+
+            return asc ? A.localeCompare(B) : B.localeCompare(A);
+        });
+
+        rows.forEach(r => tbody.appendChild(r));
+
+        filterTable();
+    };
+
+    // filtre de l'annee (rechargement de la page en gardant les autres filtres)
+   
+    function updateURLAndReload() {
+        const params = new URLSearchParams(window.location.search);
+
+        params.set("annee", selectAnnee.value);
+        params.set("dept", selectDepartement.value);
+        params.set("search", inputRecherche.value);
+        params.set("prop", sliderProprete.value);
+        params.set("freq", sliderFrequentation.value);
+
+        window.location.search = params.toString();
+    }
+
+    selectAnnee.addEventListener("change", updateURLAndReload);
+
+    
+    function restoreFiltersFromURL() {
+        const params = new URLSearchParams(window.location.search);
+
+        if (params.get("search")) inputRecherche.value = params.get("search");
+        if (params.get("dept")) selectDepartement.value = params.get("dept");
+        if (params.get("prop")) sliderProprete.value = params.get("prop");
+
+        if (params.get("freq")) {
+            let freqParam = parseInt(params.get("freq"));
+            if (!isNaN(freqParam)) {
+                sliderFrequentation.value = Math.min(freqParam, maxFreq);
+            }
+        }
+    }
+
+    restoreFiltersFromURL();
+
+    inputRecherche.addEventListener("input", filterTable);
+    selectDepartement.addEventListener("change", filterTable);
+    sliderProprete.addEventListener("input", filterTable);
+    sliderFrequentation.addEventListener("input", filterTable);
+
+    filterTable();
+});
+</script>
 
 {% endblock %}

@@ -91,7 +91,67 @@ def gare():
 
 @app.route('/chiffre')
 def chiffre():
-    return render_template('chiffre.html')
+    annee = request.args.get("annee", "2024")
+
+    conn = sqlite3.connect('bdd/gares.db')
+    c = conn.cursor()
+
+    # liste tous les départements
+    c.execute("SELECT DISTINCT SUBSTR(Code_postal, 1, 2) FROM Gare ORDER BY SUBSTR(Code_postal, 1, 2)")
+    liste_departements = c.fetchall()
+
+    # Evolution fréquentation (voyageurs)
+    c.execute("""
+        SELECT 
+            SUM(Nb_voyageurs_2022),
+            SUM(Nb_voyageurs_2023),
+            SUM(Nb_voyageurs_2024)
+        FROM Gare
+    """)
+    total_voy_22, total_voy_23, total_voy_24 = c.fetchone()
+
+    # Evolution propreté (moyenne)
+    c.execute("""
+        SELECT 
+            AVG(100 - Taux_nonconformites_2022),
+            AVG(100 - Taux_nonconformites_2023),
+            AVG(100 - Taux_nonconformites_2024)
+        FROM ControleProprete
+    """)
+    moy_prop_22, moy_prop_23, moy_prop_24 = c.fetchone()
+
+    # Liste de toutes les gares selon année choisie
+    c.execute(f"""
+        SELECT 
+            g.Nom_gare,
+            g.Nb_voyageurs_{annee},
+            (100 - cp.Taux_nonconformites_{annee}) AS proprete,
+            SUBSTR(g.Code_postal, 1, 2) AS departement
+        FROM Gare g
+        LEFT JOIN ControleProprete cp ON g.ID_gare = cp.ID_gare
+        WHERE g.Nb_voyageurs_{annee} IS NOT NULL
+        ORDER BY g.Nb_voyageurs_{annee} DESC
+    """)
+    gares = c.fetchall()
+
+    conn.close()
+
+    return render_template(
+        "chiffre.html",
+        annee=annee,
+        liste_departements=[row[0] for row in liste_departements],
+
+
+        total_voy_22=total_voy_22,
+        total_voy_23=total_voy_23,
+        total_voy_24=total_voy_24,
+
+        moy_prop_22=moy_prop_22,
+        moy_prop_23=moy_prop_23,
+        moy_prop_24=moy_prop_24,
+
+        gares=gares
+    )
 
 @app.route('/api/gares')
 def get_gares():
