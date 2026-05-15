@@ -10,6 +10,7 @@ const path = d3.geoPath().projection(projection);
 
 let selectedData = "propre";
 let selectedDep= null;
+let slectedName=null;
 let garesData = [];
 let selectedYear = "2022";
 
@@ -19,6 +20,9 @@ function loadGaresData() {
         garesData = data;
         updateColorMap();
         drawLegend();
+        if (selectedDep){
+            updateTop3();
+        }
     });
 }
 
@@ -63,6 +67,9 @@ d3.json("/static/data/departements.geojson").then(function(data){
             }
             
             document.getElementById("info-Departement").innerHTML = infoText;
+            selectedDep = d.properties.code;
+            slectedName = d.properties.nom;
+            updateTop3();
         });
     
     drawLegend();
@@ -77,6 +84,9 @@ document.querySelectorAll('input[name="donnees"]').forEach(radio =>{
         selectedData = this.value;
         updateColorMap();
         drawLegend();
+        if (selectedDep){
+            updateTop3();
+        }
     });
 });
 
@@ -156,6 +166,67 @@ function getPropreteByDepartement(){
     }
 
     return depData;
+}
+
+function updateTop3(){
+    const top3Description = document.getElementById('top3-description');
+    const top3Best = document.getElementById('top3-best');
+    const top3Worst = document.getElementById('top3-worst');
+    const top3BestTitle = document.getElementById('top3-best-title');
+    const top3WorstTitle = document.getElementById('top3-worst-title');
+
+    if(!selectedDep){
+        top3Description.innerHTML = 'Cliquez sur un département pour afficher le top 3 des gares selon la visualisation choisie.';
+        top3Best.innerHTML = '';
+        top3Worst.innerHTML = '';
+        return;
+    }
+
+    const filteredGares = garesData.filter(gare => gare.cp && gare.cp.startsWith(selectedDep));
+    if(filteredGares.length === 0){
+        top3Description.innerHTML = `Aucune gare disponible pour le département ${slectedName}.`;
+        top3Best.innerHTML = '';
+        top3Worst.innerHTML = '';
+        return;
+    }
+
+    top3Description.innerHTML = `Top 3 pour le département <strong>${slectedName}</strong> (${selectedData === 'propre' ? 'propreté' : 'fréquentation'}) :`;
+
+    if(selectedData === 'propre'){
+        const validGares = filteredGares.filter(g => g.nonconformites != null);
+        const sortedByClean = [...validGares].sort((a,b) => a.nonconformites - b.nonconformites);
+        const sortedByDirty = [...validGares].sort((a,b) => b.nonconformites - a.nonconformites);
+
+        top3BestTitle.textContent = 'Top 3 - Gares les plus propres';
+        top3WorstTitle.textContent = 'Top 3 - Gares les moins propres';
+        top3Best.innerHTML = renderTop3List(sortedByClean.slice(0, 3), 'nonconformites', true);
+        top3Worst.innerHTML = renderTop3List(sortedByDirty.slice(0, 3), 'nonconformites', false);
+    } else {
+        const validGares = filteredGares.filter(g => g.voyageurs != null);
+        const sortedByHigh = [...validGares].sort((a,b) => b.voyageurs - a.voyageurs);
+        const sortedByLow = [...validGares].sort((a,b) => a.voyageurs - b.voyageurs);
+
+        top3BestTitle.textContent = 'Top 3 - Gares les plus fréquentées';
+        top3WorstTitle.textContent = 'Top 3 - Gares les moins fréquentées';
+        top3Best.innerHTML = renderTop3List(sortedByHigh.slice(0, 3), 'voyageurs', true);
+        top3Worst.innerHTML = renderTop3List(sortedByLow.slice(0, 3), 'voyageurs', false);
+    }
+}
+
+function renderTop3List(list, metricKey, isBest){
+    if(list.length === 0){
+        return '<p>Aucune donnée disponible pour cette sélection.</p>';
+    }
+
+    return list.map((gare, index) => {
+        if(metricKey === 'nonconformites'){
+            const score = (100 - gare.nonconformites).toFixed(1);
+            return `<div class="top3-entry"><strong>${index + 1}. ${gare.nom}</strong><br>Score propreté: ${score}%</div>`;
+        }
+
+        const voyageurs = gare.voyageurs != null ? Number(gare.voyageurs).toLocaleString() : 'N/A';
+        return `<div class="top3-entry"><strong>${index + 1}. ${gare.nom}</strong><br>Voyageurs: ${voyageurs}</div>`;
+    }).join('');
 }
 
 function drawLegend(){
