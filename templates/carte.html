@@ -49,6 +49,21 @@
 
 </div>
 
+<section class="top3-section">
+    <h2>Classement Top 3</h2>
+    <p id="top3-description">Cliquez sur un département pour afficher le top 3 des gares selon la visualisation choisie.</p>
+    <div class="top3-grid">
+        <div class="top3-box">
+            <h3 id="top3-best-title">Top 3 - Meilleurs</h3>
+            <div id="top3-best"></div>
+        </div>
+        <div class="top3-box">
+            <h3 id="top3-worst-title">Top 3 - Moins bons</h3>
+            <div id="top3-worst"></div>
+        </div>
+    </div>
+</section>
+
 <script src="{{ url_for('static', filename='JS/map2.js')}}"></script>
 
 {% endblock %}
