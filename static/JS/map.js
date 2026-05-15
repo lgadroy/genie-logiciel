@@ -10,15 +10,25 @@ const path = d3.geoPath().projection(projection);
 
 let selectedData = "propre";
 let selectedDep= null;
+let slectedName=null;
 let garesData = [];
+let selectedYear = "2022";
 
 //récupère les données des gares depuis l'API Flask (connection avec la BDD)
-d3.json("/api/gares").then(function(data){
-    garesData = data;
-    console.log(garesData);
-});
+function loadGaresData() {
+    d3.json(`/api/gares?annee=${selectedYear}`).then(function(data){
+        garesData = data;
+        updateColorMap();
+        drawLegend();
+        if (selectedDep){
+            updateTop3();
+        }
+    });
+}
 
-// Affichage de la carte de france avec les données geohjson des départements
+loadGaresData();
+
+// Affichage de la carte de france avec les données geojson des départements
 d3.json("/static/data/departements.geojson").then(function(data){
 
     svg.selectAll("path")
@@ -45,17 +55,24 @@ d3.json("/static/data/departements.geojson").then(function(data){
             });
             
             let moyenneNonconf = countNonconf > 0 ? (totalNonconf / countNonconf).toFixed(2) : "N/A";
+            let pourcentageProptrete = moyenneNonconf !== "N/A" ? (100 - moyenneNonconf).toFixed(2) : "N/A";
             
-            document.getElementById("info-Departement").innerHTML =
-                "Département: " + d.properties.nom + " (" + codeDep + ")" +
-                "<br>Nombre de gares avec données de propreté : " + countNonconf + "/" + garesDep.length +
-                "<br>Fréquentation totale : " + totalVoyageurs.toLocaleString() +
-                "<br>Taux de conformité : " + (100 - parseFloat(moyenneNonconf)) + "%";
+            let infoText = "Département: " + d.properties.nom +
+                "<br>Nombre de gares: " + garesDep.length;
+            
+            if(selectedData === "frequentation"){
+                infoText += "<br>Nombre de visiteurs: " + totalVoyageurs.toLocaleString();
+            } else if(selectedData === "propre"){
+                infoText += "<br>Pourcentage de propreté: " + pourcentageProptrete + "%";
+            }
+            
+            document.getElementById("info-Departement").innerHTML = infoText;
+            selectedDep = d.properties.code;
+            slectedName = d.properties.nom;
+            updateTop3();
         });
-
-    setTimeout(() => {
-        updateColorMap();
-    }, 100);
+    
+    drawLegend();
 
 });
 
@@ -66,7 +83,17 @@ document.querySelectorAll('input[name="donnees"]').forEach(radio =>{
     radio.addEventListener('change', function(){
         selectedData = this.value;
         updateColorMap();
+        drawLegend();
+        if (selectedDep){
+            updateTop3();
+        }
     });
+});
+
+// Écouteur pour le changement d'année
+document.getElementById('annee').addEventListener('change', function(){
+    selectedYear = this.value;
+    loadGaresData();
 });
 
 function updateColorMap(){
@@ -75,12 +102,11 @@ function updateColorMap(){
 
     d3.selectAll("path")
     .attr("fill", function(d){
-        // Récupérer le code du département pour accéder aux données correspondantes
+
         let codeDep = d.properties.code;
 
         if(selectedData === "frequentation"){
             let value = depData[codeDep] || 0;
-            // Si pas de données de fréquentation, colorier en gris
             if(value === 0) return "#bdc3c7";
             if(value > 10000000) return "#922b21";
             if(value > 5000000) return "#e74c3c";
@@ -89,9 +115,8 @@ function updateColorMap(){
         }
 
         if(selectedData === "propre"){
-            let value = propData[codeDep];
-            // Si pas de données de propreté, colorier en gris
-            if(value === undefined) return "#bdc3c7";
+            let value = propData[codeDep] || 0;
+            if(value === 0) return "#bdc3c7";
             if(value < 1) return "#145a32";
             if(value < 3) return "#27ae60";
             if(value < 5) return "#82e0aa";
@@ -141,4 +166,146 @@ function getPropreteByDepartement(){
     }
 
     return depData;
+}
+
+function updateTop3(){
+    const top3Description = document.getElementById('top3-description');
+    const top3Best = document.getElementById('top3-best');
+    const top3Worst = document.getElementById('top3-worst');
+    const top3BestTitle = document.getElementById('top3-best-title');
+    const top3WorstTitle = document.getElementById('top3-worst-title');
+
+    if(!selectedDep){
+        top3Description.innerHTML = 'Cliquez sur un département pour afficher le top 3 des gares selon la visualisation choisie.';
+        top3Best.innerHTML = '';
+        top3Worst.innerHTML = '';
+        return;
+    }
+
+    const filteredGares = garesData.filter(gare => gare.cp && gare.cp.startsWith(selectedDep));
+    if(filteredGares.length === 0){
+        top3Description.innerHTML = `Aucune gare disponible pour le département ${slectedName}.`;
+        top3Best.innerHTML = '';
+        top3Worst.innerHTML = '';
+        return;
+    }
+
+    top3Description.innerHTML = `Top 3 pour le département <strong>${slectedName}</strong> (${selectedData === 'propre' ? 'propreté' : 'fréquentation'}) :`;
+
+    if(selectedData === 'propre'){
+        const validGares = filteredGares.filter(g => g.nonconformites != null);
+        const sortedByClean = [...validGares].sort((a,b) => a.nonconformites - b.nonconformites);
+        const sortedByDirty = [...validGares].sort((a,b) => b.nonconformites - a.nonconformites);
+
+        top3BestTitle.textContent = 'Top 3 - Gares les plus propres';
+        top3WorstTitle.textContent = 'Top 3 - Gares les moins propres';
+        top3Best.innerHTML = renderTop3List(sortedByClean.slice(0, 3), 'nonconformites', true);
+        top3Worst.innerHTML = renderTop3List(sortedByDirty.slice(0, 3), 'nonconformites', false);
+    } else {
+        const validGares = filteredGares.filter(g => g.voyageurs != null);
+        const sortedByHigh = [...validGares].sort((a,b) => b.voyageurs - a.voyageurs);
+        const sortedByLow = [...validGares].sort((a,b) => a.voyageurs - b.voyageurs);
+
+        top3BestTitle.textContent = 'Top 3 - Gares les plus fréquentées';
+        top3WorstTitle.textContent = 'Top 3 - Gares les moins fréquentées';
+        top3Best.innerHTML = renderTop3List(sortedByHigh.slice(0, 3), 'voyageurs', true);
+        top3Worst.innerHTML = renderTop3List(sortedByLow.slice(0, 3), 'voyageurs', false);
+    }
+}
+
+function renderTop3List(list, metricKey, isBest){
+    if(list.length === 0){
+        return '<p>Aucune donnée disponible pour cette sélection.</p>';
+    }
+
+    return list.map((gare, index) => {
+        if(metricKey === 'nonconformites'){
+            const score = (100 - gare.nonconformites).toFixed(1);
+            return `<div class="top3-entry"><strong>${index + 1}. ${gare.nom}</strong><br>Score propreté: ${score}%</div>`;
+        }
+
+        const voyageurs = gare.voyageurs != null ? Number(gare.voyageurs).toLocaleString() : 'N/A';
+        return `<div class="top3-entry"><strong>${index + 1}. ${gare.nom}</strong><br>Voyageurs: ${voyageurs}</div>`;
+    }).join('');
+}
+
+function drawLegend(){
+    // Supprimer l'ancienne légende s'il en existe une
+    d3.select("#legend").remove();
+    
+    const legendX = width - 250;
+    const legendY = 20;
+    const legendItemHeight = 30;
+    
+    const legend = svg.append("g")
+        .attr("id", "legend")
+        .attr("transform", `translate(${legendX}, ${legendY})`);
+    
+    // Fond de la légende
+    legend.append("rect")
+        .attr("width", 230)
+        .attr("height", selectedData === "frequentation" ? 160 : 140)
+        .attr("fill", "white")
+        .attr("stroke", "#333")
+        .attr("stroke-width", 1)
+        .attr("rx", 4);
+    
+    // Titre de la légende
+    legend.append("text")
+        .attr("x", 115)
+        .attr("y", 20)
+        .attr("text-anchor", "middle")
+        .attr("font-weight", "bold")
+        .attr("font-size", "12px")
+        .text(selectedData === "frequentation" ? "Fréquentation" : "Propreté");
+    
+    if(selectedData === "frequentation"){
+        const frequentationLegend = [
+            { color: "#922b21", label: "> 10 millions" },
+            { color: "#e74c3c", label: "> 5 millions" },
+            { color: "#f1948a", label: "> 1 million" },
+            { color: "#fadbd8", label: "< 1 million" }
+        ];
+        
+        frequentationLegend.forEach((item, i) => {
+            legend.append("rect")
+                .attr("x", 15)
+                .attr("y", 30 + i * legendItemHeight)
+                .attr("width", 15)
+                .attr("height", 15)
+                .attr("fill", item.color)
+                .attr("stroke", "#333")
+                .attr("stroke-width", 0.5);
+            
+            legend.append("text")
+                .attr("x", 35)
+                .attr("y", 42 + i * legendItemHeight)
+                .attr("font-size", "11px")
+                .text(item.label);
+        });
+    } else {
+        const propreteteLegend = [
+            { color: "#145a32", label: "> 99%" },
+            { color: "#27ae60", label: "97-99" },
+            { color: "#82e0aa", label: "95-97%" },
+            { color: "#fadbd8", label: "< 95%" }
+        ];
+        
+        propreteteLegend.forEach((item, i) => {
+            legend.append("rect")
+                .attr("x", 15)
+                .attr("y", 30 + i * legendItemHeight)
+                .attr("width", 15)
+                .attr("height", 15)
+                .attr("fill", item.color)
+                .attr("stroke", "#333")
+                .attr("stroke-width", 0.5);
+            
+            legend.append("text")
+                .attr("x", 35)
+                .attr("y", 42 + i * legendItemHeight)
+                .attr("font-size", "11px")
+                .text(item.label);
+        });
+    }
 }
