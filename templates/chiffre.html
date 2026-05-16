@@ -85,7 +85,7 @@
 </thead>
 
     <tbody>
-    {% for gare in gares %}
+    {% for gare in gares[:50] %}
         {% set nom = gare[0] %}
         {% set freq = gare[1] %}
         {% set proprete = gare[2] %}
@@ -145,15 +145,17 @@ document.addEventListener("DOMContentLoaded", () => {
     let rows = Array.from(document.querySelectorAll(".gareRow"));
 
     
+    const CAP_FREQ = 150000000; // plafond du slider
     let maxFreq = 0;
     rows.forEach(row => {
         const freq = parseInt(row.dataset.freq) || 0;
         if (freq > maxFreq) maxFreq = freq;
     });
 
-    sliderFrequentation.max = maxFreq;
-    sliderFrequentation.value = maxFreq;
-    valeurFrequentation.textContent = maxFreq.toLocaleString("fr-FR");
+    const sliderMax = Math.min(maxFreq, CAP_FREQ);
+    sliderFrequentation.max = sliderMax;
+    sliderFrequentation.value = sliderMax;
+    valeurFrequentation.textContent = sliderMax.toLocaleString("fr-FR");
 
     //barre de progression
     function updateProgressBars() {
@@ -264,7 +266,7 @@ document.addEventListener("DOMContentLoaded", () => {
         if (params.get("freq")) {
             let freqParam = parseInt(params.get("freq"));
             if (!isNaN(freqParam)) {
-                sliderFrequentation.value = Math.min(freqParam, maxFreq);
+                sliderFrequentation.value = Math.min(freqParam, parseInt(sliderFrequentation.max));
             }
         }
     }
