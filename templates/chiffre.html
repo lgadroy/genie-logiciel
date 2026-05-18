@@ -58,6 +58,13 @@ th:hover .static-arrows {
 #sliderProprete, #sliderFrequentation {
     margin-top: 12px;
 }
+
+.filter--checkbox{
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-width: 220px;
+}
 </style>
 
 <div class="container-dashboard">
@@ -112,6 +119,12 @@ th:hover .static-arrows {
         </select>
     </div>
 
+    <div class="filter filter--checkbox">
+        <label for="hideNaCheckbox">Cacher les gares sans contrôle</label>
+        <input type="checkbox" id="hideNaCheckbox">
+        
+    </div>
+
     <div class="filter">
         <label>Propreté : <span id="propreteRangeText"></span></label>
         <div id="sliderProprete"></div>
@@ -121,11 +134,11 @@ th:hover .static-arrows {
         <label>Fréquentation : <span id="frequentationRangeText"></span></label>
         <div id="sliderFrequentation"></div>
     </div>
+        
 </div>
 
 <div class="section">
 <h2>Liste des gares</h2>
-
 <table id="gareTable">
 <thead>
 <tr>
@@ -286,10 +299,22 @@ document.addEventListener("DOMContentLoaded", () => {
             if (search && !nom.includes(search) && !dpt.includes(search)) show = false;
             if (dept !== "all" && dpt !== dept) show = false;
 
-            if (prop !== -1 && (prop < propreteMin || prop > propreteMax)) show = false;
-            if (freq < frequentationMin || freq > frequentationMax) show = false;
+                if (prop !== -1 && (prop < propreteMin || prop > propreteMax)) show = false;
+                if (freq < frequentationMin || freq > frequentationMax) show = false;
+                // cacher si option "Cacher les gares sans contrôle" activée
+                const hideNa = document.getElementById('hideNaCheckbox');
+                if (hideNa && hideNa.checked && prop === -1) show = false;
 
-            row.style.display = show ? "" : "none";
+                row.style.display = show ? "" : "none";
+            });
+
+            // limiter l'affichage à 50 résultats visibles (mais laisser moins si <50)
+            let visible = 0;
+            rows.forEach(row => {
+                if (row.style.display !== 'none') {
+                    visible += 1;
+                    if (visible > 50) row.style.display = 'none';
+                }
         });
     }
 
@@ -347,6 +372,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
     inputRecherche.addEventListener("input", filterTable);
     selectDepartement.addEventListener("change", filterTable);
+    const hideNa = document.getElementById('hideNaCheckbox');
+    if (hideNa) hideNa.addEventListener('change', filterTable);
 
     sliderProprete.noUiSlider.on("update", filterTable);
     sliderFrequentation.noUiSlider.on("update", filterTable);
