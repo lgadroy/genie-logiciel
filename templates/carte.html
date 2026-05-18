@@ -7,28 +7,63 @@
 <section class="section">
     <h1>Carte de la France</h1>
     <p>
-        Carte la france avec possibilité de zoomer sur les différents départments et régions. 
+        Carte de la France avec possibilité de zoomer sur les différents départements. 
     </p>
 </section>
 <div class="map-layout">
     <div class="map-sidebar">
-        <h3>Affichage :</h3>
-        <label>
-            <input type="radio" name="donnees" value="Region" checked>
-            Régions
-        </label>
-        <label>
-            <input type="radio" name="donnees" value="departement" checked>
-            Départements
-        </label>
+        <div class="feature-input">
+            <h3>Affichage :</h3>
+            <label>
+                <input type="radio" name="donnees" value="propre" checked>
+                Propreté
+            </label>
+            <br>
+            <label>
+                <input type="radio" name="donnees" value="frequentation">
+                Fréquentation
+            </label>
+            <br>
+            <br>
+            <label for="annee">Année :</label>
+            <select id="annee"> 
+                <option value="2022" selected>2022</option>
+                <option value="2023">2023</option>
+                <option value="2024">2024</option>
+            </select>
+        </div>
+        <br>
+        <hr>
+        <br>
+        <div class="infoDep">
+            <h3> Info département : </h3>
+            <div id="info-Departement">
+                Département sélectionné : Aucun
+            </div>
+        </div>
     </div>
-    
+
     <section class="map-section">
-        <div id="map"></div>
+        <svg id="map" width="800" height="700"></svg>
     </section>
 
 </div>
 
-<script src="{{ url_for('static', filename='JS/map2.js')}}"></script>
+<section class="top3-section">
+    <h2>Classement Top 3</h2>
+    <p id="top3-description">Cliquez sur un département pour afficher le top 3 des gares selon la visualisation choisie.</p>
+    <div class="top3-grid">
+        <div class="top3-box">
+            <h3 id="top3-best-title">Top 3 - Meilleurs</h3>
+            <div id="top3-best"></div>
+        </div>
+        <div class="top3-box">
+            <h3 id="top3-worst-title">Top 3 - Moins bons</h3>
+            <div id="top3-worst"></div>
+        </div>
+    </div>
+</section>
+
+<script src="{{ url_for('static', filename='JS/map.js')}}"></script>
 
 {% endblock %}

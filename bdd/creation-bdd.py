@@ -6,7 +6,7 @@ FREQ_PATH = 'nettoyage/frequentation-gares-clean.csv'
 PROP_22 = 'nettoyage/proprete-en-gare-22-clean.csv'
 PROP_23 = 'nettoyage/proprete-en-gare-23-clean.csv'
 PROP_24 = 'nettoyage/proprete-en-gare-24-clean.csv'
-DB_PATH = 'local-bdd/gares.db'
+DB_PATH = 'bdd/gares.db'
 
 # Création de la base et des 2 tables
 conn = sqlite3.connect(DB_PATH)
@@ -39,7 +39,13 @@ CREATE TABLE IF NOT EXISTS ControleProprete (
 ''')
 
 # Import des données de fréquentation
-df_freq = pd.read_csv(FREQ_PATH, sep=';')
+df_freq = pd.read_csv(FREQ_PATH, sep=';', dtype=str)
+df_freq.columns = df_freq.columns.str.strip()
+
+# On ajoute un zéro devant les codes postaux à 4 chiffres (ex : 7500 devient 07500)
+def ajouter_zero_code_postal(code):
+    return code if pd.isna(code) else str(code).zfill(5)
+df_freq['Code postal'] = df_freq['Code postal'].apply(ajouter_zero_code_postal)
 
 # Préparer les données pour l'insertion
 gares = []

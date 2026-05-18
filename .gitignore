@@ -1,5 +1,6 @@
 /venv
 /static/JS/map2.js
+/static/JS/map3.js
 local*
 *.db
 *clean.csv
