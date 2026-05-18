@@ -6,7 +6,7 @@
 
 <section class="home-title-section">
     <h1 class="home-title-title">Propreté au sein des gares SNCF</h1>
-    <p class="home-title-subtitle">Visualisez et analysez les données de propreté des gares SNCF à travers la France</p>
+    <p class="home-title-subtitle">Visualisez et analysez les données de propreté et de fréquentation des gares SNCF à travers la France</p>
 </section>
 
 <section class="cards-section">
@@ -17,7 +17,7 @@
                 📍
             </div>
             <h3 class="card-title">Carte Interactive</h3>
-            <p class="card-description">Explorez la propreté des gares par département sur une carte interactive</p>
+            <p class="card-description">Explorez la propreté et la fréquentation des gares par département sur une carte interactive</p>
             <a href="/carte" class="btn btn-primary">Voir la carte</a>
         </div>
 
@@ -51,24 +51,6 @@
             <div class="stat-number">{{ home_total_voyageurs | default('0') }}</div>
             <div class="stat-label">Voyageurs en 2024</div>
         </div>
-    </div>
-</section>
-
-<section class="top-gares-section">
-    <div class="top-gares-box top-gare-frequentee">
-        <div class="top-gares-icon">✓</div>
-        <h3 class="top-gares-title">Gare la plus propre</h3>
-        <p class="top-gares-gare-name">{{ home_gare_plus_propre | default('None') }}</p>
-        <p class="top-gares-detail">Score de propreté: {{ home_score_plus_propre | default('0%') }}</p>
-        <p class="top-gares-detail">Département: {{ home_departement_plus_propre | default('None') }}</p>
-    </div>
-
-    <div class="top-gares-box top-gare-plus-propre">
-        <div class="top-gares-icon">👥</div>
-        <h3 class="top-gares-title">Gare la plus fréquentée</h3>
-        <p class="top-gares-gare-name">{{ home_gare_plus_frequentee | default('None') }}</p>
-        <p class="top-gares-detail">Fréquentation: {{ home_nombre_voyageurs_plus_frequentee | default('0') }} voyageurs</p>
-        <p class="top-gares-detail">Propreté: {{ home_proprete_gare_plus_frequentee | default('0%') }}</p>
     </div>
 </section>
 

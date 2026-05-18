@@ -181,22 +181,7 @@ def get_gares():
             "voyageurs": row[3],
             "nonconformites": row[4]
         })
-
     return jsonify(gares)
-
-# Exemple de route pour tester la base de données
-@app.route('/testbdd')
-def test_bdd():
-    gares = test_get_gares()
-    return render_template('testbdd.html', gares=gares)
-
-def test_get_gares():
-    conn = sqlite3.connect('bdd/gares.db')
-    c = conn.cursor()
-    c.execute("SELECT ID_gare, Nom_gare FROM Gare")
-    gares = c.fetchall()
-    conn.close()
-    return gares
 
 if __name__ == '__main__':
     app.run(debug=True)
