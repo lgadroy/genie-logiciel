@@ -116,11 +116,12 @@ function updateColorMap(){
 
         if(selectedData === "propre"){
             let value = propData[codeDep] || 0;
-            if(value === 0) return "#bdc3c7";
-            if(value < 1) return "#145a32";
-            if(value < 3) return "#27ae60";
-            if(value < 5) return "#82e0aa";
-            return "#fadbd8"; 
+            if(value === 0) return "#bdc3c7"; // pas de donnée
+            // value = taux moyen de non-conformités, on calcule la propreté
+            let proprete = 100 - value;
+            if(proprete > 97) return "#145a32"; // très propre
+            if(proprete > 93) return "#27ae60"; // propre
+            return "#fa9e95"; // médiocre (<93)
         }
     });
 }
@@ -285,10 +286,10 @@ function drawLegend(){
         });
     } else {
         const propreteteLegend = [
-            { color: "#145a32", label: "> 99%" },
-            { color: "#27ae60", label: "97-99" },
-            { color: "#82e0aa", label: "95-97%" },
-            { color: "#fadbd8", label: "< 95%" }
+            { color: "#145a32", label: "> 97% : Très propre" },
+            { color: "#27ae60", label: "93-97% : Propre" },
+            { color: "#fa9e95", label: "< 93% : Médiocre" }
+            // 20 synonymes : à améliorer, innaceptable, peu propre, sale, très sale, insalubre, déplorable, médiocre, lamentable, honteux, indigne, inacceptable, à revoir, à améliorer, à corriger, à surveiller, à contrôler, à inspecter, à nettoyer, à rénover
         ];
         
         propreteteLegend.forEach((item, i) => {

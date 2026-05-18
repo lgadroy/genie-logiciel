@@ -4,14 +4,66 @@
 
 {% block content %}
 
-<style>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/nouislider@15.7.1/dist/nouislider.min.css">
+<script src="https://cdn.jsdelivr.net/npm/nouislider@15.7.1/dist/nouislider.min.js"></script>
 
+<style>
+#sliderProprete, #sliderFrequentation {
+    margin-top: 10px;
+}
+
+
+th {
+    cursor: pointer;
+}
+
+th:hover .static-arrows {
+    opacity: 1;
+}
+
+.noUi-target {
+    background: #eaeaea;
+    border-radius: 20px;
+    border: none;
+    box-shadow: none;
+    height: 10px;
+}
+
+.noUi-connect {
+    background: #6a00ff;
+    border-radius: 20px;
+}
+
+.noUi-horizontal .noUi-handle {
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: white;
+    border: 3px solid #6a00ff;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+    cursor: pointer;
+    top: -5px;
+}
+
+.noUi-handle:before,
+.noUi-handle:after {
+    display: none;
+}
+
+.noUi-horizontal .noUi-handle:hover {
+    transform: scale(1.1);
+    transition: 0.15s;
+}
+
+#sliderProprete, #sliderFrequentation {
+    margin-top: 12px;
+}
 </style>
 
 <div class="container-dashboard">
 
 <h1>Données des gares</h1>
-<p class="subtitle">Découvrez toutes les gares SNCF et leurs indicateurs de propreté</p>
+<p class="subtitle">Découvrez toutes les gares SNCF et leurs indicateurs de propreté et de fréquentation</p>
 
 <div class="section">
     <h2>📈 Évolution globale</h2>
@@ -61,13 +113,13 @@
     </div>
 
     <div class="filter">
-        <label>Propreté ≥ <span id="valeurProprete">0</span>%</label>
-        <input type="range" id="sliderProprete" min="0" max="100" value="0">
+        <label>Propreté : <span id="propreteRangeText"></span></label>
+        <div id="sliderProprete"></div>
     </div>
 
     <div class="filter">
-        <label>Fréquentation max <span id="valeurFrequentation"></span></label>
-        <input type="range" id="sliderFrequentation" min="0" value="0" step="10000">
+        <label>Fréquentation : <span id="frequentationRangeText"></span></label>
+        <div id="sliderFrequentation"></div>
     </div>
 </div>
 
@@ -84,78 +136,90 @@
 </tr>
 </thead>
 
-    <tbody>
-    {% for gare in gares[:50] %}
-        {% set nom = gare[0] %}
-        {% set freq = gare[1] %}
-        {% set proprete = gare[2] %}
-        {% set departement = gare[3] %}
+<tbody>
+{% for gare in gares %}
+    {% set nom = gare[0] %}
+    {% set freq = gare[1] %}
+    {% set proprete = gare[2] %}
+    {% set departement = gare[3] %}
 
-        <tr class="gareRow"
-            data-nom="{{ nom|lower }}"
-            data-dept="{{ departement|lower }}"
-            data-proprete="{{ proprete if proprete is not none else -1 }}"
-            data-freq="{{ freq }}">
+    <tr class="gareRow"
+        data-nom="{{ nom|lower }}"
+        data-dept="{{ departement|lower }}"
+        data-proprete="{{ proprete if proprete is not none else -1 }}"
+        data-freq="{{ freq }}">
 
-            <td><b>{{ nom }}</b></td>
-            <td>{{ departement }}</td>
+        <td><b>{{ nom }}</b></td>
+        <td>{{ departement }}</td>
 
-            <td>
-                {% if proprete is none %}
-                    <span class="badge badge-red">N/A</span>
-                {% elif proprete >= 90 %}
-                    <span class="badge badge-green">{{ "%.1f"|format(proprete) }}%</span>
-                {% elif proprete >= 75 %}
-                    <span class="badge badge-orange">{{ "%.1f"|format(proprete) }}%</span>
-                {% else %}
-                    <span class="badge badge-red">{{ "%.1f"|format(proprete) }}%</span>
-                {% endif %}
-            </td>
+        <td>
+            {% if proprete is none %}
+                <span class="badge badge-red">N/A</span>
+            {% elif proprete >= 90 %}
+                <span class="badge badge-green">{{ "%.1f"|format(proprete) }}%</span>
+            {% elif proprete >= 75 %}
+                <span class="badge badge-orange">{{ "%.1f"|format(proprete) }}%</span>
+            {% else %}
+                <span class="badge badge-red">{{ "%.1f"|format(proprete) }}%</span>
+            {% endif %}
+        </td>
 
-            <td>
-                <div class="progress-bar">
-                    <div class="progress-fill"></div>
-                </div>
-                {{ "{:,}".format(freq).replace(",", " ") }}
-            </td>
-        </tr>
-    {% endfor %}
-    </tbody>
+        <td>
+            <div class="progress-bar">
+                <div class="progress-fill"></div>
+            </div>
+            {{ "{:,}".format(freq).replace(",", " ") }}
+        </td>
+    </tr>
+{% endfor %}
+</tbody>
 </table>
-</div>
 
+</div>
 </div>
 
 <script>
 document.addEventListener("DOMContentLoaded", () => {
-
 
     const table = document.getElementById("gareTable");
     const tbody = table.querySelector("tbody");
 
     const inputRecherche = document.getElementById("inputRecherche");
     const selectDepartement = document.getElementById("selectDepartement");
-    const sliderProprete = document.getElementById("sliderProprete");
-    const sliderFrequentation = document.getElementById("sliderFrequentation");
     const selectAnnee = document.getElementById("selectAnnee");
 
-    const valeurProprete = document.getElementById("valeurProprete");
-    const valeurFrequentation = document.getElementById("valeurFrequentation");
-    
+    const sliderProprete = document.getElementById("sliderProprete");
+    const sliderFrequentation = document.getElementById("sliderFrequentation");
+
+    const propreteRangeText = document.getElementById("propreteRangeText");
+    const frequentationRangeText = document.getElementById("frequentationRangeText");
+
     let rows = Array.from(document.querySelectorAll(".gareRow"));
 
-    
-    const CAP_FREQ = 150000000; // plafond du slider
+    const CAP_FREQ = 150000000;
     let maxFreq = 0;
+
     rows.forEach(row => {
         const freq = parseInt(row.dataset.freq) || 0;
         if (freq > maxFreq) maxFreq = freq;
     });
 
-    const sliderMax = Math.min(maxFreq, CAP_FREQ);
-    sliderFrequentation.max = sliderMax;
-    sliderFrequentation.value = sliderMax;
-    valeurFrequentation.textContent = sliderMax.toLocaleString("fr-FR");
+    const sliderMaxFrequentation = Math.min(maxFreq, CAP_FREQ);
+
+    noUiSlider.create(sliderProprete, {
+        start: [0, 100],
+        connect: true,
+        range: { min: 0, max: 100 },
+        step: 1
+    });
+
+    noUiSlider.create(sliderFrequentation, {
+        start: [0, sliderMaxFrequentation],
+        connect: true,
+        range: { min: 0, max: sliderMaxFrequentation },
+        step: 10000
+    });
+
 
     //barre de progression
     function updateProgressBars() {
@@ -167,18 +231,49 @@ document.addEventListener("DOMContentLoaded", () => {
             }
         });
     }
-
     updateProgressBars();
 
-   //filtres et recherche
+
+    function restoreFiltersFromURL() {
+        const params = new URLSearchParams(window.location.search);
+
+        if (params.get("search")) inputRecherche.value = params.get("search");
+        if (params.get("dept")) selectDepartement.value = params.get("dept");
+
+        let propreteMin = params.get("propreteMin");
+        let propreteMax = params.get("propreteMax");
+
+        let frequentationMin = params.get("frequentationMin");
+        let frequentationMax = params.get("frequentationMax");
+
+        if (propreteMin !== null && propreteMax !== null) {
+            sliderProprete.noUiSlider.set([propreteMin, propreteMax]);
+        }
+
+        if (frequentationMin !== null && frequentationMax !== null) {
+            sliderFrequentation.noUiSlider.set([frequentationMin, frequentationMax]);
+        }
+    }
+
+    restoreFiltersFromURL();
+
+
+    //filtre et recherche
     function filterTable() {
         const search = inputRecherche.value.toLowerCase().trim();
         const dept = selectDepartement.value.toLowerCase();
-        const minProp = parseFloat(sliderProprete.value);
-        const maxF = parseInt(sliderFrequentation.value);
 
-        valeurProprete.textContent = minProp;
-        valeurFrequentation.textContent = maxF.toLocaleString("fr-FR");
+        const valeurProprete = sliderProprete.noUiSlider.get().map(v => parseFloat(v));
+        const valeurFrequentation = sliderFrequentation.noUiSlider.get().map(v => parseFloat(v));
+
+        const propreteMin = valeurProprete[0];
+        const propreteMax = valeurProprete[1];
+
+        const frequentationMin = valeurFrequentation[0];
+        const frequentationMax = valeurFrequentation[1];
+
+        propreteRangeText.textContent = `${Math.round(propreteMin)}% - ${Math.round(propreteMax)}%`;
+        frequentationRangeText.textContent = `${Math.round(frequentationMin).toLocaleString("fr-FR")} - ${Math.round(frequentationMax).toLocaleString("fr-FR")}`;
 
         rows.forEach(row => {
             const nom = row.dataset.nom || "";
@@ -188,21 +283,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
             let show = true;
 
-            if (search && !nom.includes(search) && !dpt.includes(search)) {
-                show = false;
-            }
+            if (search && !nom.includes(search) && !dpt.includes(search)) show = false;
+            if (dept !== "all" && dpt !== dept) show = false;
 
-            if (dept !== "all" && dpt !== dept) {
-                show = false;
-            }
-
-            if (prop !== -1 && prop < minProp) {
-                show = false;
-            }
-
-            if (freq > maxF) {
-                show = false;
-            }
+            if (prop !== -1 && (prop < propreteMin || prop > propreteMax)) show = false;
+            if (freq < frequentationMin || freq > frequentationMax) show = false;
 
             row.style.display = show ? "" : "none";
         });
@@ -235,48 +320,36 @@ document.addEventListener("DOMContentLoaded", () => {
         });
 
         rows.forEach(r => tbody.appendChild(r));
-
         filterTable();
     };
 
-    // filtre de l'annee (rechargement de la page en gardant les autres filtres)
-   
+     // filtre de l'annee (rechargement de la page en gardant les autres filtres)
     function updateURLAndReload() {
         const params = new URLSearchParams(window.location.search);
+
+        const valeurProprete = sliderProprete.noUiSlider.get();
+        const valeurFrequentation = sliderFrequentation.noUiSlider.get();
 
         params.set("annee", selectAnnee.value);
         params.set("dept", selectDepartement.value);
         params.set("search", inputRecherche.value);
-        params.set("prop", sliderProprete.value);
-        params.set("freq", sliderFrequentation.value);
+
+        params.set("propreteMin", valeurProprete[0]);
+        params.set("propreteMax", valeurProprete[1]);
+
+        params.set("frequentationMin", valeurFrequentation[0]);
+        params.set("frequentationMax", valeurFrequentation[1]);
 
         window.location.search = params.toString();
     }
 
     selectAnnee.addEventListener("change", updateURLAndReload);
 
-    
-    function restoreFiltersFromURL() {
-        const params = new URLSearchParams(window.location.search);
-
-        if (params.get("search")) inputRecherche.value = params.get("search");
-        if (params.get("dept")) selectDepartement.value = params.get("dept");
-        if (params.get("prop")) sliderProprete.value = params.get("prop");
-
-        if (params.get("freq")) {
-            let freqParam = parseInt(params.get("freq"));
-            if (!isNaN(freqParam)) {
-                sliderFrequentation.value = Math.min(freqParam, parseInt(sliderFrequentation.max));
-            }
-        }
-    }
-
-    restoreFiltersFromURL();
-
     inputRecherche.addEventListener("input", filterTable);
     selectDepartement.addEventListener("change", filterTable);
-    sliderProprete.addEventListener("input", filterTable);
-    sliderFrequentation.addEventListener("input", filterTable);
+
+    sliderProprete.noUiSlider.on("update", filterTable);
+    sliderFrequentation.noUiSlider.on("update", filterTable);
 
     filterTable();
 });
