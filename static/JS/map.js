@@ -21,6 +21,7 @@ function loadGaresData() {
         updateColorMap();
         drawLegend();
         if (selectedDep){
+            updateInfoDepartement();
             updateTop3();
         }
     });
@@ -40,35 +41,9 @@ d3.json("/static/data/departements.geojson").then(function(data){
         .attr("stroke", "#333")
         .on("click", function(event, d){
             let codeDep = d.properties.code;
-            let garesDep = garesData.filter(g => g.cp.startsWith(codeDep));
-            
-            let totalVoyageurs = 0;
-            let totalNonconf = 0;
-            let countNonconf = 0;
-            
-            garesDep.forEach(g => {
-                totalVoyageurs += g.voyageurs || 0;
-                if(g.nonconformites != null){
-                    totalNonconf += g.nonconformites;
-                    countNonconf += 1;
-                }
-            });
-            
-            let moyenneNonconf = countNonconf > 0 ? (totalNonconf / countNonconf).toFixed(2) : "N/A";
-            let pourcentageProptrete = moyenneNonconf !== "N/A" ? (100 - moyenneNonconf).toFixed(2) : "N/A";
-            
-            let infoText = "Département: " + d.properties.nom +
-                "<br>Nombre de gares: " + garesDep.length;
-            
-            if(selectedData === "frequentation"){
-                infoText += "<br>Nombre de visiteurs: " + totalVoyageurs.toLocaleString();
-            } else if(selectedData === "propre"){
-                infoText += "<br>Pourcentage de propreté: " + pourcentageProptrete + "%";
-            }
-            
-            document.getElementById("info-Departement").innerHTML = infoText;
             selectedDep = d.properties.code;
             slectedName = d.properties.nom;
+            updateInfoDepartement();
             updateTop3();
         });
     
@@ -85,6 +60,7 @@ document.querySelectorAll('input[name="donnees"]').forEach(radio =>{
         updateColorMap();
         drawLegend();
         if (selectedDep){
+            updateInfoDepartement();
             updateTop3();
         }
     });
@@ -108,10 +84,10 @@ function updateColorMap(){
         if(selectedData === "frequentation"){
             let value = depData[codeDep] || 0;
             if(value === 0) return "#bdc3c7";
-            if(value > 10000000) return "#922b21";
-            if(value > 5000000) return "#e74c3c";
-            if(value > 1000000) return "#f1948a";
-            return "#fadbd8";
+            if(value > 10000000) return "#1a4c98"; // très fréquenté (bleu foncé)
+            if(value > 5000000) return "#2171b5"; // fréquent (bleu)
+            if(value > 1000000) return "#6baed6"; // modérément fréquent (bleu clair)
+            return "#c6dbef"; // peu fréquent (très clair)
         }
 
         if(selectedData === "propre"){
@@ -119,8 +95,8 @@ function updateColorMap(){
             if(value === 0) return "#bdc3c7"; // pas de donnée
             // value = taux moyen de non-conformités, on calcule la propreté
             let proprete = 100 - value;
-            if(proprete > 97) return "#145a32"; // très propre
-            if(proprete > 93) return "#27ae60"; // propre
+            if(proprete > 97) return "#0e8642"; // très propre
+            if(proprete > 93) return "#49cc7f"; // propre
             return "#fa9e95"; // médiocre (<93)
         }
     });
@@ -167,6 +143,43 @@ function getPropreteByDepartement(){
     }
 
     return depData;
+}
+
+function updateInfoDepartement(){
+    const infoDepartement = document.getElementById("info-Departement");
+
+    if(!selectedDep){
+        infoDepartement.innerHTML = "";
+        return;
+    }
+
+    const garesDep = garesData.filter(g => g.cp && g.cp.startsWith(selectedDep));
+
+    let totalVoyageurs = 0;
+    let totalNonconf = 0;
+    let countNonconf = 0;
+
+    garesDep.forEach(g => {
+        totalVoyageurs += g.voyageurs || 0;
+        if(g.nonconformites != null){
+            totalNonconf += g.nonconformites;
+            countNonconf += 1;
+        }
+    });
+
+    let moyenneNonconf = countNonconf > 0 ? (totalNonconf / countNonconf).toFixed(2) : "N/A";
+    let pourcentageProptrete = moyenneNonconf !== "N/A" ? (100 - moyenneNonconf).toFixed(2) : "N/A";
+
+    let infoText = "Département: " + slectedName +
+        "<br>Nombre de gares: " + garesDep.length;
+
+    if(selectedData === "frequentation"){
+        infoText += "<br>Nombre de visiteurs: " + totalVoyageurs.toLocaleString();
+    } else if(selectedData === "propre"){
+        infoText += "<br>Propreté moyenne: " + pourcentageProptrete + "%";
+    }
+
+    infoDepartement.innerHTML = infoText;
 }
 
 function updateTop3(){
@@ -262,10 +275,10 @@ function drawLegend(){
     
     if(selectedData === "frequentation"){
         const frequentationLegend = [
-            { color: "#922b21", label: "> 10 millions" },
-            { color: "#e74c3c", label: "> 5 millions" },
-            { color: "#f1948a", label: "> 1 million" },
-            { color: "#fadbd8", label: "< 1 million" }
+            { color: "#1a4c98", label: "> 10 millions" },
+            { color: "#2171b5", label: "> 5 millions" },
+            { color: "#6baed6", label: "> 1 million" },
+            { color: "#c6dbef", label: "< 1 million" }
         ];
         
         frequentationLegend.forEach((item, i) => {
@@ -286,8 +299,8 @@ function drawLegend(){
         });
     } else {
         const propreteteLegend = [
-            { color: "#145a32", label: "> 97% : Très propre" },
-            { color: "#27ae60", label: "93-97% : Propre" },
+            { color: "#0e8642", label: "> 97% : Très propre" },
+            { color: "#49cc7f", label: "93-97% : Propre" },
             { color: "#fa9e95", label: "< 93% : Médiocre" }
             // 20 synonymes : à améliorer, innaceptable, peu propre, sale, très sale, insalubre, déplorable, médiocre, lamentable, honteux, indigne, inacceptable, à revoir, à améliorer, à corriger, à surveiller, à contrôler, à inspecter, à nettoyer, à rénover
         ];
