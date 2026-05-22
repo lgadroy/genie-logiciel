@@ -79,7 +79,6 @@ http://127.0.0.1:5000
 genie-logiciel/
 ├── app.py
 ├── build.py
-├── build.sh
 ├── requirements.txt
 ├── bdd/
 │   ├── creation_bdd.py
@@ -106,7 +105,6 @@ genie-logiciel/
 │   ├── header&footer.html
 │   └── home.html
 ├── tests/
-│   ├── local_test_suite.py
 │   ├── test_donnees.py
 │   └── test_routes.py
 └── README.MD
