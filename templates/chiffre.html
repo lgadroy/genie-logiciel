@@ -168,9 +168,9 @@ th:hover .static-arrows {
         <td>
             {% if proprete is none %}
                 <span class="badge badge-red">N/A</span>
-            {% elif proprete >= 90 %}
+            {% elif proprete > 97 %}
                 <span class="badge badge-green">{{ "%.1f"|format(proprete) }}%</span>
-            {% elif proprete >= 75 %}
+            {% elif proprete > 93 %}
                 <span class="badge badge-orange">{{ "%.1f"|format(proprete) }}%</span>
             {% else %}
                 <span class="badge badge-red">{{ "%.1f"|format(proprete) }}%</span>
