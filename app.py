@@ -1,16 +1,22 @@
+import os
 from flask import Flask, render_template, jsonify, request
 import sqlite3
 
 app = Flask(__name__)
 
+# Fonction qui détecte si on est sur Azure ou sur PC
+def get_db_path():
+    if "WEBSITE_INSTANCE_ID" in os.environ:
+        return "/home/bdd/gares.db"
+    return "bdd/gares.db"
+
 @app.route('/')
 def home():
-    conn = sqlite3.connect('bdd/gares.db')
+    conn = sqlite3.connect(get_db_path())
     c = conn.cursor()
 
     # Nombre total de gares dans la base
     c.execute("SELECT COUNT(*) FROM Gare")
-    # fetchone() retourne une tuple, on prend le premier élément
     home_nombre_gares = c.fetchone()[0]
 
     # Nombre de départements différents représentés dans la base
@@ -29,10 +35,9 @@ def home():
     # Total des voyageurs en 2024
     c.execute("SELECT SUM(Nb_voyageurs_2024) FROM Gare WHERE Nb_voyageurs_2024 IS NOT NULL")
     home_total_voyageurs = c.fetchone()[0]
-    # On formate le nombre total de voyageurs avec des espaces pour les milliers
     home_total_voyageurs = f"{int(home_total_voyageurs):,}".replace(',', ' ')
 
-    # Gare la plus propre : on récupère son nom, son score et son département
+    # Gare la plus propre
     c.execute("""
         SELECT
             g.Nom_gare AS nom_gare,
@@ -49,7 +54,7 @@ def home():
     home_score_plus_propre = f"{plus_propre[1]:.1f}%"
     home_departement_plus_propre = plus_propre[2]
 
-    # Gare la plus fréquentée : on récupère aussi son score de propreté
+    # Gare la plus fréquentée
     c.execute("""
         SELECT Nom_gare, Nb_voyageurs_2024,
                (SELECT 100 - Taux_nonconformites_2024
@@ -93,7 +98,7 @@ def gare():
 def chiffre():
     annee = request.args.get("annee", "2024")
 
-    conn = sqlite3.connect('bdd/gares.db')
+    conn = sqlite3.connect(get_db_path())
     c = conn.cursor()
 
     # liste tous les départements
@@ -140,23 +145,19 @@ def chiffre():
         "chiffre.html",
         annee=annee,
         liste_departements=[row[0] for row in liste_departements],
-
-
         total_voy_22=total_voy_22,
         total_voy_23=total_voy_23,
         total_voy_24=total_voy_24,
-
         moy_prop_22=moy_prop_22,
         moy_prop_23=moy_prop_23,
         moy_prop_24=moy_prop_24,
-
         gares=gares
     )
 
 @app.route('/api/gares')
 def get_gares():
     annee = request.args.get('annee', '2022')  
-    conn = sqlite3.connect('bdd/gares.db')
+    conn = sqlite3.connect(get_db_path())
     c = conn.cursor()
     query = f"""
         SELECT g.ID_gare, g.Nom_gare, g.Code_postal,
