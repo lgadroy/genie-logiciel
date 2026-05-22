@@ -18,6 +18,9 @@ L'application utilise une base de données SQLite (`bdd/gares.db`) et un backend
 - Page de carte pour visualiser les données géographiques.
 - Page de chiffres et statistiques par année.
 
+### Lien vers le site déployé
+https://genielogiciel-cmcsakb2cpd6bmaw.francecentral-01.azurewebsites.net/
+
 ## Installation et exécution
 
 ### Prérequis
