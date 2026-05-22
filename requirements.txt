@@ -1,5 +1,5 @@
 flask
-sqlite3
 matplotlib
 scipy
 pandas
+pytest
