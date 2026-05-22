@@ -27,7 +27,7 @@ L'application utilise une base de données SQLite (`bdd/gares.db`) et un backend
 - Python 3.10 ou supérieur
 - `pip`
 
-### Étapes d'installation
+### Étapes d'installation (Windows)
 
 1. Cloner le dépôt :
 
@@ -36,7 +36,7 @@ git clone https://github.com/lgadroy/genie-logiciel.git
 cd genie-logiciel
 ```
 
-2. Créer et activer un environnement virtuel (facultatif, recommandé) :
+2. Créer et activer un environnement virtuel (recommandé) :
 
 ```bash
 python -m venv venv
@@ -49,16 +49,16 @@ venv\Scripts\activate.bat
 3. Installer les dépendances :
 
 ```bash
-pip install Flask pandas
+pip install -r requirements.txt
 ```
 
-4. Vérifier que la base de données existe :
+4. Préparer les données et la base :
 
-- Le fichier `bdd/gares.db` est déjà présent dans le projet.
-- Si vous souhaitez recréer ou mettre à jour la base, exécutez :
+- Le script `build.py` exécute les étapes de nettoyage et crée/met à jour la base SQLite.
+- Exécutez :
 
 ```bash
-python bdd/creation-bdd.py
+python build.py
 ```
 
 5. Lancer l'application :
@@ -77,13 +77,18 @@ http://127.0.0.1:5000
 
 ```
 genie-logiciel/
+├── app.py
+├── build.py
+├── build.sh
+├── requirements.txt
 ├── bdd/
-│   ├── creation-bdd.py
+│   ├── creation_bdd.py
 │   └── gares.db
 ├── nettoyage/
 │   ├── frequentation-gares.csv
 │   ├── nettoyage_frequentation_gares.py
 │   ├── nettoyage_proprete_gare.py
+│   ├── traitement_donnees.py
 │   ├── proprete-en-gare-22.csv
 │   ├── proprete-en-gare-23.csv
 │   └── proprete-en-gare-24.csv
@@ -91,19 +96,20 @@ genie-logiciel/
 │   ├── CSS/
 │   │   └── style.css
 │   ├── data/
-│   │   ├── departements.geojson
-│   │   └── regions.geojson
+│   │   └── departements.geojson
 │   └── JS/
-│       ├── map.js
-│       └── map2.js
+│       └── map.js
 ├── templates/
 │   ├── carte.html
 │   ├── chiffre.html
 │   ├── gare.html
 │   ├── header&footer.html
 │   └── home.html
-├── app.py
-└── README.md
+├── tests/
+│   ├── local_test_suite.py
+│   ├── test_donnees.py
+│   └── test_routes.py
+└── README.MD
 ```
 
 ## Commandes Git utiles
@@ -116,8 +122,6 @@ git pull
 ```
 
 ## Notes
-
-- Si vous modifiez les fichiers de données dans `nettoyage/`, relancez `python bdd/creation-bdd.py` pour mettre à jour `bdd/gares.db`.
 - `sqlite3` est utilisé en interne, mais vous n'avez pas besoin de l'installer séparément avec Python standard.
 
 ## Équipe projet
