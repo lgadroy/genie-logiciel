@@ -16,9 +16,7 @@ L'application utilise une base de données SQLite (`bdd/gares.db`) et un backend
 
 - Page d'accueil avec des indicateurs clés (nombre de gares, nombre de départements, moyenne de propreté, gare la plus propre, gare la plus fréquentée).
 - Page de carte pour visualiser les données géographiques.
-- Page de détail de gare.
 - Page de chiffres et statistiques par année.
-- API interne disponible sur `/api/gares` pour récupérer les données de gares au format JSON.
 
 ## Installation et exécution
 
